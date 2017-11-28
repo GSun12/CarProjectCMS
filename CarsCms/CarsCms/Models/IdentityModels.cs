@@ -31,5 +31,8 @@ namespace CarsCms.Models
         }
 
         public System.Data.Entity.DbSet<CarsCms.Models.CarEntity> CarEntities { get; set; }
+        public DbSet<Engine> Engines { get; set; }
+
+        public System.Data.Entity.DbSet<CarsCms.ApiConsumer.Model.Performance> Performances { get; set; }
     }
 }

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
+using CarsCms.ApiConsumer.Interfaces;
+using CarsCms.ApiConsumer.Model;
 using CarsCms.Interfaces;
 using CarsCms.Models;
 using CarsCms.Repository.Interfaces;
@@ -15,18 +14,32 @@ namespace CarsCms.Controllers
 {
     public class CarsController : Controller
     {
-        private ICarsRepository _carsRepository;
-        private ICarBusinessLogic _businessLogic;
-        public CarsController(ICarsRepository carsRepository, ICarBusinessLogic businessLogic)
+        private readonly ICarsRepository _carsRepository;
+        private readonly ICarBusinessLogic _businessLogic;
+        private readonly IEmailClient _emailClient;
+
+
+
+        public CarsController(
+            ICarsRepository carsRepository,
+            ICarBusinessLogic businessLogic,
+            IEmailClient emailClient
+
+            )
         {
             _carsRepository = carsRepository;
             _businessLogic = businessLogic;
+            _emailClient = emailClient;
+
         }
         // GET: Cars
         public ActionResult Index()
         {
-            var carVM = new VMCars {CarList = new List<CarEntity>()};
-            carVM.ShowIfAuth = _businessLogic.CheckIfUserIsAutorize();
+            var carVM = new VMCars
+            {
+                CarList = new List<CarEntity>(),
+                ShowIfAuth = _businessLogic.CheckIfUserIsAutorize()
+            };
             if (carVM.ShowIfAuth)
                 carVM.CarList = _carsRepository.GetWhere(x => x.Id > 0);
             else
@@ -63,12 +76,15 @@ namespace CarsCms.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(VMCars carEntity)
+        public async Task<ActionResult> Create(VMCars carEntity)
         {
             if (ModelState.IsValid)
             {
                 carEntity.Car.ModPerson = _businessLogic.CheckIfUserIsAuthAndReturnName();
                 _carsRepository.Create(carEntity.Car);
+                var model = new EmailApiModel();
+                model.To = "doKogo";
+                await _emailClient.Post(model);
                 return RedirectToAction("Index");
             }
 

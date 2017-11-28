@@ -1,3 +1,5 @@
+using CarsCms.ApiConsumer;
+using CarsCms.ApiConsumer.Interfaces;
 using CarsCms.Interfaces;
 using CarsCms.Repository.Interfaces;
 
@@ -66,8 +68,14 @@ namespace CarsCms.App_Start
         /// <param name="kernel">The kernel.</param>
         private static void RegisterServices(IKernel kernel)
         {
+            //repo
             kernel.Bind<ICarsRepository>().To<CarsRepository>();
             kernel.Bind<ICarBusinessLogic>().To<CarBusinessLogic>();
+            kernel.Bind<IEngineRepository>().To<EngineRepository>();
+            //client
+            kernel.Bind<IEmailClient>().To<EmailClient>();
+            kernel.Bind<IPerformanceClient>().To<PerformaceClient>();
+
         }        
     }
 }
